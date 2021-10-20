@@ -3,4 +3,4 @@
 
 ##Instruções
 - Atualize a url da API no arquivo config/environment.py
-- excute o arquivo 
+- excute o arquivo app.py
