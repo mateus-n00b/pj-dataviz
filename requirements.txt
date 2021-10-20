@@ -9,3 +9,4 @@ beautifulSoup4
 html5lib
 lxml
 dask
+gunicorn
