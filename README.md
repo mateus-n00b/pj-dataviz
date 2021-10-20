@@ -2,4 +2,4 @@
 **Aplicação para visualização de dados via dashboard**
 
 ##Instruções
-- a
+- Atualize a url da API no arquivo config/environment.py

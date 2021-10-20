@@ -9,15 +9,19 @@ import pandas as pd
 import plotly.express as px
 from utils.do_requests import get_request
 
+app = dash.Dash()
+# Loading csvs
 r = get_request('/data/comex')
 df_comex = pd.DataFrame.from_dict(r)
 r = get_request('/data/sh2')
 df_sh2 = pd.DataFrame.from_dict(r)
 r = get_request('/data/d_via')
 df_via = pd.DataFrame.from_dict(r)
+print("Loading sh2...")
+sh2 = df_sh2.loc[df_sh2['COD_NCM'].isin(df_comex['COD_NCM'])]
+print("Creating product list")
+products = sh2['NO_NCM_POR'].unique()
 
-
-app = dash.Dash()
 colors = {
     'background': '#FFFFFF',
     'text': '#7FDBFF'
@@ -58,17 +62,19 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
 pd.options.mode.chained_assignment = None  # default='warn'
 
 
+# Total de exportacoes e imports
 def calc_total_import_export(df):
     months = df['MES'].unique()
     months.sort()
-    imports = []
-    exports = []
+    imports = [0 for i in range(12)]
+    exports = [0 for i in range(12)]
     for m in months:
+        # months indices == m-1
         df_month = df.loc[df['MES'] == m]
         df_temp = df_month.loc[df_month['MOVIMENTACAO'].isin(['Exportação'])]
-        exports.append(len(df_temp.index))
+        exports[m-1] = len(df_temp.index)
         df_temp = df_month.loc[df_month['MOVIMENTACAO'].isin(['Importação'])]
-        imports.append(len(df_temp.index))
+        imports[m-1] = len(df_temp.index)
     return imports, exports
 
 
@@ -76,7 +82,7 @@ def dashboard():
     global app
     return app
 
-
+# Lista de opcoes
 @app.callback(
     Output('dd-output-container', 'children'),
     Input('demo-dropdown', 'value')
@@ -84,10 +90,12 @@ def dashboard():
 def dropdown_callback(value):
     global filter_opt
     # df_comex = get_request('/data/comex')
+    import numpy as np
 
-    x = df_comex[value].unique()
     if value == 'COD_NCM':
-        x = df_sh2['NO_NCM_POR'].unique()
+        x = products
+    else:
+        x = df_comex[value].unique()
     filter_opt = value
     return html.Div([
         dcc.Dropdown(
@@ -96,7 +104,6 @@ def dropdown_callback(value):
                 {'label': i, 'value': i} for i in x
             ],
             value=x[0],
-            # multi=True
         ),
         html.Div(id='dd-output-filter')
     ])
@@ -115,14 +122,11 @@ def get_filter(opt):
 
     # Filter by product
     if filter_opt == 'COD_NCM':
-        # Uncomment to use API
-        # response = get_request("/data/sh2")
-        # df_dict = response.json()
-        # df = pd.DataFrame.from_dict(df_dict)
         df = df_sh2
 
         df_temp = df.loc[df['NO_NCM_POR'] == opt]
         cod_ncm = df_temp['COD_NCM']
+        # correlates product name with id
         df_output = df_comex.loc[df_comex[filter_opt].isin(cod_ncm)]
         # Get total of import and export
         imports, exports = calc_total_import_export(df_output)

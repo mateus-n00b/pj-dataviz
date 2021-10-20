@@ -1,1 +1,1 @@
-web: gunicorn app:server
+web: gunicorn app:server  0.0.0.0 8050
