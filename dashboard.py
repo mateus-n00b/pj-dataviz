@@ -3,11 +3,19 @@ import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-from routers.get_data import df_comex, df_sh2, df_via
+# from routers.get_data import df_comex, df_sh2, df_via
 from config.environment import MAX_ROWS
 import pandas as pd
 import plotly.express as px
 from utils.do_requests import get_request
+
+r = get_request('/data/comex')
+df_comex = pd.DataFrame.from_dict(r)
+r = get_request('/data/sh2')
+df_sh2 = pd.DataFrame.from_dict(r)
+r = get_request('/data/d_via')
+df_via = pd.DataFrame.from_dict(r)
+
 
 app = dash.Dash()
 colors = {
