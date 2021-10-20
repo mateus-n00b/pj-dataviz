@@ -1,0 +1,11 @@
+pandas
+flask
+openpyxl
+dash
+dash_core_components
+dash_html_components
+requests
+beautifulSoup4
+html5lib
+lxml
+dask
